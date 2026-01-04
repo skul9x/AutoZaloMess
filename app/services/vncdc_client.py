@@ -1,0 +1,134 @@
+import httpx
+from .vncdc_parser import parse_login_token, parse_ke_hoach_tiem_id, parse_search_response
+
+class VncdcClient:
+    def __init__(self, base_url="https://tiemchung.vncdc.gov.vn"):
+        self.base_url = base_url.rstrip("/")
+        self.session = httpx.Client(base_url=self.base_url, follow_redirects=True, timeout=30.0, headers={
+            "User-Agent": "Mozilla/5.0",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        })
+
+    def close(self):
+        self.session.close()
+
+    def get_login_page(self):
+        r = self.session.get("/Account/Login")
+        r.raise_for_status()
+        token = parse_login_token(r.text)
+        return token
+
+    def login(self, username, password, remember=True):
+        token = self.get_login_page()
+        data = {
+            "__RequestVerificationToken": token,
+            "UserName": username,
+            "password": password,
+            "remember_me_check": "true" if remember else "false",
+            "remember_me": "true" if remember else "false",
+        }
+        r = self.session.post("/Account/Login", data=data, headers={
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Origin": self.base_url,
+            "Referer": f"{self.base_url}/Account/Login",
+        })
+        r.raise_for_status()
+        auth_cookie = self.session.cookies.get(".ASPXAUTH")
+        if not auth_cookie:
+            if "Đăng nhập" in r.text and "FormLogin" in r.text:
+                return False
+        return True
+
+    def fetch_profile_and_plan(self):
+        r = self.session.get("/KeHoachTiemPhatSinhArea/KeHoachTiemPhatSinh")
+        r.raise_for_status()
+        ke_hoach_id = parse_ke_hoach_tiem_id(r.text)
+        profile = {}
+        return profile, ke_hoach_id
+
+    def search_doi_tuong(self, payload):
+        r = self.session.post(
+            "/KeHoachTiemPhatSinhArea/NhapBoSung/GetDanhSachDoiTuongTiem/",
+            data=payload,
+            headers={
+                "Accept": "text/html, */*; q=0.01",
+                "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+                "Origin": self.base_url,
+                "Referer": f"{self.base_url}/KeHoachTiemPhatSinhArea/KeHoachTiemPhatSinh",
+                "X-Requested-With": "XMLHttpRequest",
+            }
+        )
+        r.raise_for_status()
+        return parse_search_response(r.text)
+
+    def execute_curl_cmd(self, curl_cmd: str):
+        """
+        Parses a raw curl command string and executes it using the existing session.
+        This is a basic parser tailored for the specific format provided by the user.
+        """
+        import shlex
+
+        # Clean up the command
+        cmd = curl_cmd.replace("\\\n", " ").replace("\\", "").strip()
+        if not cmd.startswith("curl"):
+            return None
+
+        try:
+            tokens = shlex.split(cmd)
+        except:
+            # Fallback for simple splitting if shlex fails on complex chars
+            tokens = cmd.split()
+
+        url = None
+        method = "GET"
+        headers = {}
+        data = None
+
+        i = 1
+        while i < len(tokens):
+            token = tokens[i]
+            
+            if token.startswith("http"):
+                url = token
+            elif token in ("-H", "--header"):
+                i += 1
+                if i < len(tokens):
+                    header_str = tokens[i]
+                    if ":" in header_str:
+                        key, value = header_str.split(":", 1)
+                        headers[key.strip()] = value.strip()
+            elif token == "--data-raw" or token == "--data" or token == "-d":
+                i += 1
+                if i < len(tokens):
+                    data = tokens[i]
+                    method = "POST"
+            
+            i += 1
+
+        if not url:
+            return None
+
+        # Update specific headers but keep session defaults where appropriate
+        # Note: We don't want to override the session cookies blindly if the curl has specific cookies,
+        # but usually we want to use the CURL's cookies if provided, or the session's if not.
+        # For this specific task, the curl command likely contains the valid session cookie.
+        
+        # We will create a request using the parsed info.
+        # If 'Content-Type' is in headers, let it decide the encoding.
+        
+        # 'data' string from curl is usually x-www-form-urlencoded. 
+        # We pass it directly as 'content' or parse it to 'data' dict/list?
+        # httpx 'data' arg accepts dict (form-encoded) or str (raw body).
+        
+        req_headers = self.session.headers.copy()
+        req_headers.update(headers)
+        
+        # Remove Accept-Encoding to avoid decompression issues if handled manually (httpx handles it)
+        if "cmp" in req_headers.get("Accept-Encoding", ""):
+            del req_headers["Accept-Encoding"]
+
+        r = self.session.request(method, url, headers=req_headers, content=data)
+        r.raise_for_status()
+        
+        # We assume the response format is the same as the search result
+        return parse_search_response(r.text)
