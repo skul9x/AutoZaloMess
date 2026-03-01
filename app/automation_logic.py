@@ -33,6 +33,23 @@ class AutomationLogic:
             self.log(f"Lỗi khi tìm ảnh '{image_path}': {e}")
             return False
 
+    def wait_for_any_image(self, images_dict, timeout=10, confidence=0.8):
+        start_time = time.time()
+        while self.running and time.time() - start_time < timeout:
+            self.pause_event.wait()
+            if not self.running: return None, None
+            
+            for state, image_path in images_dict.items():
+                if image_path and 'Chưa thiết lập' not in image_path:
+                    try:
+                        location = pyautogui.locateOnScreen(image_path, region=(0, 0, 1000, 600), confidence=confidence)
+                        if location:
+                            return state, location
+                    except Exception:
+                        pass
+            time.sleep(0.3)
+        return None, None
+
     def process_contact(self, phone, name, message_template, params):
         if not self.running:
             return "stopped"
@@ -50,17 +67,30 @@ class AutomationLogic:
         self.controlled_sleep(1)
         pyautogui.hotkey("ctrl", "a")
         pyautogui.typewrite(phone)
-        self.controlled_sleep(2.5)
+        
+        images_to_check = {
+            "rate_limited": params.get("ratelimit_image_path"),
+            "failed": params.get("fail_image_path"),
+            "success": params.get("success_image_path")
+        }
+        
+        self.log("Đang tìm kết quả...")
+        found_state, location = self.wait_for_any_image(images_to_check, timeout=10)
 
-        if self.check_image(params["ratelimit_image_path"]):
+        if found_state == "rate_limited":
             self.log("!!! PHÁT HIỆN LỖI GIỚI HẠN TÌM KIẾM TỪ ZALO !!!")
             return "rate_limited"
 
-        if self.check_image(params["fail_image_path"]):
-            self.log("=> Lỗi: Số điện thoại không tìm thấy. Bỏ qua...")
+        elif found_state == "failed":
+            self.log("=> Lỗi: Số điện thoại không tìm thấy hoặc bị chặn. Bỏ qua...")
+            pyautogui.click(params["friend_coords"])
+            self.controlled_sleep(0.5)
+            pyautogui.hotkey("ctrl", "a")
+            self.controlled_sleep(0.3)
             return "failed"
-        else:
-            self.log("=> Thành công: Bắt đầu gửi tin nhắn.")
+            
+        elif found_state == "success":
+            self.log("=> Thành công: Đã tìm thấy người dùng. Bắt đầu gửi tin nhắn.")
             pyautogui.click(params["friend_coords"])
             self.controlled_sleep(0.5)
             pyautogui.click(params["messagebox_coords"])
@@ -72,9 +102,15 @@ class AutomationLogic:
             self.controlled_sleep(0.5)
             pyautogui.press("enter")
             self.log("Đã gửi tin nhắn thành công.")
-        
-        self.log(f"Hoàn thành xử lý cho {name}.")
-        return "success"
+            return "success"
+            
+        else:
+            self.log("=> Lỗi Timeout: Mạng quá lag hoặc không nhận diện được kết quả trả về sau 10s. Bỏ qua...")
+            pyautogui.click(params["friend_coords"])
+            self.controlled_sleep(0.5)
+            pyautogui.hotkey("ctrl", "a")
+            self.controlled_sleep(0.3)
+            return "failed"
 
     def controlled_sleep(self, duration):
         end_time = time.time() + duration

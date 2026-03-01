@@ -126,6 +126,14 @@ class AutomationTab(ttk.Frame):
         ttk.Entry(image_frame, textvariable=self.state["image_path_vars"]["web_ratelimit_path"], state="readonly").grid(row=3, column=1, padx=5, sticky="ew")
         ttk.Button(image_frame, text="Tải ảnh...", command=lambda: self.callbacks["handle_load_fail_image"]("web_ratelimit_path")).grid(row=3, column=2)
 
+        ttk.Label(image_frame, text="Ảnh báo thành công (App):").grid(row=4, column=0, sticky="w", pady=2)
+        ttk.Entry(image_frame, textvariable=self.state["image_path_vars"]["app_success_path"], state="readonly").grid(row=4, column=1, padx=5, sticky="ew")
+        ttk.Button(image_frame, text="Tải ảnh...", command=lambda: self.callbacks["handle_load_fail_image"]("app_success_path")).grid(row=4, column=2)
+
+        ttk.Label(image_frame, text="Ảnh báo thành công (Web):").grid(row=5, column=0, sticky="w", pady=2)
+        ttk.Entry(image_frame, textvariable=self.state["image_path_vars"]["web_success_path"], state="readonly").grid(row=5, column=1, padx=5, sticky="ew")
+        ttk.Button(image_frame, text="Tải ảnh...", command=lambda: self.callbacks["handle_load_fail_image"]("web_success_path")).grid(row=5, column=2)
+
         log_frame = ttk.LabelFrame(right_frame, text="Nhật ký", padding=10)
         log_frame.pack(fill="both", expand=True, pady=(10, 0))
         self.log_text = tk.Text(log_frame, state=tk.DISABLED, wrap=tk.WORD, bg="#f0f0f0", font=("Segoe UI", 8))

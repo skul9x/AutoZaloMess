@@ -2,5 +2,7 @@
     "web_fail_path": "C:/Users/Admin/Desktop/Test_code/AutoZaloMess_1.2_SourceCode/KhongChoTimKiem_web.png",
     "app_fail_path": "C:/Users/Admin/Desktop/Test_code/AutoZaloMess_1.2_SourceCode/KhongChoTimKiem_app.png",
     "web_ratelimit_path": "C:/Users/Admin/Desktop/Test_code/AutoZaloMess_1.2_SourceCode/AnhgioihanTimKiem_web.png",
-    "app_ratelimit_path": "C:/Users/Admin/Desktop/Test_code/AutoZaloMess_1.2_SourceCode/AnhgioihanTimKiem_app.png"
+    "app_ratelimit_path": "C:/Users/Admin/Desktop/Test_code/AutoZaloMess_1.2_SourceCode/AnhgioihanTimKiem_app.png",
+    "web_success_path": "C:/Users/Admin/Desktop/Test_code/AutoZaloMess_1.3_SourceCode/ThanhCong_web.png",
+    "app_success_path": "C:/Users/Admin/Desktop/Test_code/AutoZaloMess_1.3_SourceCode/ThanhCong_app.png"
 }

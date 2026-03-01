@@ -1,0 +1,41 @@
+{
+    "meta": {
+        "schema_version": "1.1.0",
+        "awf_version": "3.3.0"
+    },
+    "project": {
+        "name": "AutoZaloMess",
+        "type": "RPA + Computer Vision",
+        "status": "v2.0 - Smart Recognition"
+    },
+    "tech_stack": {
+        "language": "Python 3.11+",
+        "libraries": [
+            "httpx",
+            "pyautogui",
+            "pyperclip",
+            "tkinter",
+            "tkcalendar",
+            "babel"
+        ],
+        "frontend": "Tkinter",
+        "automation": "PyAutoGUI"
+    },
+    "knowledge_items": {
+        "patterns": [
+            "MVC Architecture with Services layer",
+            "Smart Wait RPA Flow: Search -> Wait for Success/Fail/Limit/Timeout -> Act",
+            "Event-driven threading with Pause/Resume/Stop support"
+        ],
+        "gotchas": [
+            "Fixed sleep times (deprecated in v1.3) replaced by wait_for_any_image",
+            "Confidence level of 0.8 optimized for text detection",
+            "Requires pyautogui, pyperclip, and tkcalendar installed via pip",
+            "Case 'Failed'/SĐT không tồn tại cần click friend_coords + Ctrl+A để dọn dẹp kết quả cũ trước khi tìm số tiếp theo"
+        ],
+        "conventions": [
+            "Coordinates stored in coords_config.json",
+            "3-Image states: Success (Số điện thoại:), Failed (Không tìm thấy), Rate Limit (Giới hạn)"
+        ]
+    }
+}

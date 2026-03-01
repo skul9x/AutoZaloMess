@@ -15,7 +15,7 @@ from .fetch_tab import FetchTab
 class MainWindow(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title("Ứng dụng tự động gửi tin Zalo v1.2 - Tích hợp VNCDC")
+        self.title("Ứng dụng tự động gửi tin Zalo v2.0 - Tích hợp VNCDC")
         self.geometry("1200x800")
 
         self.comm_queue = queue.Queue()
@@ -32,7 +32,9 @@ class MainWindow(tk.Tk):
             "web_fail_path": tk.StringVar(value="Chưa thiết lập"),
             "app_fail_path": tk.StringVar(value="Chưa thiết lập"),
             "web_ratelimit_path": tk.StringVar(value="Chưa thiết lập"),
-            "app_ratelimit_path": tk.StringVar(value="Chưa thiết lập")
+            "app_ratelimit_path": tk.StringVar(value="Chưa thiết lập"),
+            "web_success_path": tk.StringVar(value="Chưa thiết lập"),
+            "app_success_path": tk.StringVar(value="Chưa thiết lập")
         }
 
         self.storage = StorageService()

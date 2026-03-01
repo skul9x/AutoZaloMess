@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.idea/
+.vsc/
+.vscode/
+.DS_Store
+
+# Brain data: session.json is local only, brain.json can be shared.
+.brain/session.json
+
+# If you want to keep all code in repo, don't ignore docs or plans.

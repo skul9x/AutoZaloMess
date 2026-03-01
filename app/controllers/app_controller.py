@@ -230,7 +230,13 @@ class AppController:
         mode = self.window.zalo_mode.get()
         fail_image_key = "web_fail_path" if mode == "web" else "app_fail_path"
         ratelimit_image_key = "web_ratelimit_path" if mode == "web" else "app_ratelimit_path"
-        images_ready = "Chưa thiết lập" not in self.window.image_path_vars[fail_image_key].get() and "Chưa thiết lập" not in self.window.image_path_vars[ratelimit_image_key].get()
+        success_img_key = "web_success_path" if mode == "web" else "app_success_path"
+
+        images_ready = (
+            "Chưa thiết lập" not in self.window.image_path_vars[fail_image_key].get() and 
+            "Chưa thiết lập" not in self.window.image_path_vars[ratelimit_image_key].get() and
+            "Chưa thiết lập" not in self.window.image_path_vars[success_img_key].get()
+        )
         is_ready_to_run = coords_ready and images_ready
 
         if state == "initial":
@@ -273,10 +279,16 @@ class AppController:
             mode = self.window.zalo_mode.get()
             fail_image_key = "web_fail_path" if mode == "web" else "app_fail_path"
             ratelimit_image_key = "web_ratelimit_path" if mode == "web" else "app_ratelimit_path"
+            success_img_key = "web_success_path" if mode == "web" else "app_success_path"
+            
             params["fail_image_path"] = self.window.image_path_vars[fail_image_key].get()
             params["ratelimit_image_path"] = self.window.image_path_vars[ratelimit_image_key].get()
-            if not os.path.exists(params["fail_image_path"]) or not os.path.exists(params["ratelimit_image_path"]):
-                tab.show_error("Lỗi", f"Chưa thiết lập hoặc không tìm thấy file ảnh lỗi cho chế độ {mode.upper()}.")
+            params["success_image_path"] = self.window.image_path_vars[success_img_key].get()
+
+            if not os.path.exists(params["fail_image_path"]) or \
+               not os.path.exists(params["ratelimit_image_path"]) or \
+               not os.path.exists(params["success_image_path"]):
+                tab.show_error("Lỗi", f"Chưa thiết lập hoặc không tìm thấy đủ 3 file ảnh điều kiện cho chế độ {mode.upper()}.")
                 return
         except Exception as e:
             tab.show_error("Lỗi tọa độ", f"Một hoặc nhiều tọa độ không hợp lệ. Lỗi: {e}")
