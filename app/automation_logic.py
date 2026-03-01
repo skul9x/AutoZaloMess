@@ -83,7 +83,7 @@ class AutomationLogic:
 
         elif found_state == "failed":
             self.log("=> Lỗi: Số điện thoại không tìm thấy hoặc bị chặn. Bỏ qua...")
-            pyautogui.click(params["friend_coords"])
+            pyautogui.click(params["search_coords"])
             self.controlled_sleep(0.5)
             pyautogui.hotkey("ctrl", "a")
             self.controlled_sleep(0.3)
@@ -106,7 +106,7 @@ class AutomationLogic:
             
         else:
             self.log("=> Lỗi Timeout: Mạng quá lag hoặc không nhận diện được kết quả trả về sau 10s. Bỏ qua...")
-            pyautogui.click(params["friend_coords"])
+            pyautogui.click(params["search_coords"])
             self.controlled_sleep(0.5)
             pyautogui.hotkey("ctrl", "a")
             self.controlled_sleep(0.3)
