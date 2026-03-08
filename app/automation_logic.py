@@ -86,11 +86,14 @@ class AutomationLogic:
             pyautogui.click(params["search_coords"])
             self.controlled_sleep(0.5)
             pyautogui.hotkey("ctrl", "a")
+            self.controlled_sleep(0.1)
+            pyautogui.press("backspace")
             self.controlled_sleep(0.3)
             return "failed"
             
         elif found_state == "success":
             self.log("=> Thành công: Đã tìm thấy người dùng. Bắt đầu gửi tin nhắn.")
+            self.controlled_sleep(0.3)
             pyautogui.click(params["friend_coords"])
             self.controlled_sleep(0.5)
             pyautogui.click(params["messagebox_coords"])
@@ -109,6 +112,8 @@ class AutomationLogic:
             pyautogui.click(params["search_coords"])
             self.controlled_sleep(0.5)
             pyautogui.hotkey("ctrl", "a")
+            self.controlled_sleep(0.1)
+            pyautogui.press("backspace")
             self.controlled_sleep(0.3)
             return "failed"
 

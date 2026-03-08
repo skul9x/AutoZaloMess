@@ -6,7 +6,7 @@
     "project": {
         "name": "AutoZaloMess",
         "type": "RPA + Computer Vision",
-        "status": "v2.0 - Smart Recognition"
+        "status": "v2.1 - Enhanced RPA Safety"
     },
     "tech_stack": {
         "language": "Python 3.11+",
@@ -35,7 +35,9 @@
         ],
         "conventions": [
             "Coordinates stored in coords_config.json",
-            "3-Image states: Success (Số điện thoại:), Failed (Không tìm thấy), Rate Limit (Giới hạn)"
+            "3-Image states: Success (Số điện thoại:), Failed (Không tìm thấy), Rate Limit (Giới hạn)",
+            "Backspace Cleanup: Ctrl+A -> Backspace to ensure search field is empty",
+            "Success Delay: 300ms delay before clicking friend_coords"
         ]
     }
 }

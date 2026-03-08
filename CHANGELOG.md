@@ -1,5 +1,17 @@
 # Changelog
 
+## [2026-03-08] - v2.1.0 (RPA Safety Update)
+### Added
+- **Anti-Duplicate Check**: App tự động bỏ qua (skip) các số điện thoại đã có trạng thái "Thành công" trong cùng phiên chạy, giúp ngăn chặn việc gửi trùng tin nhắn khi khởi động lại kịch bản.
+- **Enhanced Search Cleanup**: Thêm phím nóng "Backspace" sau lệnh `Ctrl + A` trong các trường hợp lỗi (Failed) hoặc Timeout. Đảm bảo ô tìm kiếm Zalo luôn được xóa trắng tuyệt đối trước khi xử lý SĐT tiếp theo.
+- **Success Delay (300ms)**: Thêm khoảng thời gian chờ 300ms ngay sau khi nhận diện ảnh Thành công. Giúp UI Zalo ổn định hơn trước khi app thực hiện cú click vào tọa độ người dùng.
+
+### Changed
+- Cập nhật phiên bản bộ nhớ dự án (.brain) lên trạng thái v2.1.
+- Tối ưu hóa thời gian phản hồi giữa các thao tác phím nóng để tránh hiện tượng kẹt phím mô phỏng.
+
+---
+
 ## [2026-03-01] - v2.0.0 (Release)
 ### Added
 - **Official v2.0 Upgrade**: Toàn bộ hệ thống được đồng bộ hóa lên phiên bản 2.0.
