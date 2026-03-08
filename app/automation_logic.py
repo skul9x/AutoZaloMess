@@ -129,7 +129,7 @@ class AutomationLogic:
         self.controlled_sleep(5)
 
         for i, contact in enumerate(contacts):
-            if contact["status"] == "Đã gửi trước đó":
+            if contact["status"] in ("Đã gửi trước đó", "Thành công"):
                 continue
 
             self.comm_queue.put(("status", i, "Đang xử lý..."))
