@@ -19,7 +19,13 @@ class VncdcClient:
         return token
 
     def login(self, username, password, remember=True):
-        token = self.get_login_page()
+        try:
+            r_get = self.session.get("/Account/Login")
+            r_get.raise_for_status()
+            token = parse_login_token(r_get.text)
+        except Exception as e:
+            return False, "failed", f"Không thể tải trang đăng nhập: {str(e)}"
+
         data = {
             "__RequestVerificationToken": token,
             "UserName": username,
@@ -27,17 +33,114 @@ class VncdcClient:
             "remember_me_check": "true" if remember else "false",
             "remember_me": "true" if remember else "false",
         }
-        r = self.session.post("/Account/Login", data=data, headers={
-            "Content-Type": "application/x-www-form-urlencoded",
-            "Origin": self.base_url,
-            "Referer": f"{self.base_url}/Account/Login",
-        })
-        r.raise_for_status()
-        auth_cookie = self.session.cookies.get(".ASPXAUTH")
-        if not auth_cookie:
-            if "Đăng nhập" in r.text and "FormLogin" in r.text:
-                return False
-        return True
+
+        try:
+            r_post = self.session.post(
+                "/Account/Login",
+                data=data,
+                headers={
+                    "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+                    "X-Requested-With": "XMLHttpRequest",
+                    "Accept": "application/json, text/javascript, */*; q=0.01",
+                    "Origin": self.base_url,
+                    "Referer": f"{self.base_url}/Account/Login",
+                },
+                follow_redirects=False
+            )
+        except Exception as e:
+            return False, "failed", f"Gửi yêu cầu đăng nhập thất bại: {str(e)}"
+
+        is_2fa_required = False
+        message = "Yêu cầu xác thực 2 lớp"
+
+        # Check redirect 302 đến VerifyTwoFactor
+        if r_post.status_code == 302 and "VerifyTwoFactor" in r_post.headers.get("Location", ""):
+            is_2fa_required = True
+        else:
+            try:
+                json_resp = r_post.json()
+                if json_resp.get("TwoFactorRequired"):
+                    is_2fa_required = True
+                    message = json_resp.get("Message", "Yêu cầu xác thực 2 lớp")
+            except Exception:
+                if ".ASPXAUTH" not in self.session.cookies:
+                    return False, "failed", "Server không trả về phản hồi hợp lệ."
+
+        if is_2fa_required:
+            try:
+                self.session.get(
+                    "/DonViHanhChinh/LayThongBao",
+                    headers={
+                        "X-Requested-With": "XMLHttpRequest",
+                        "Referer": f"{self.base_url}/Account/Login",
+                        "Accept": "*/*"
+                    }
+                )
+            except Exception:
+                pass
+            return True, "2fa_required", message
+        else:
+            if ".ASPXAUTH" in self.session.cookies:
+                return True, "success", None
+            else:
+                error_message = "Sai tài khoản hoặc mật khẩu"
+                try:
+                    json_resp = r_post.json()
+                    if json_resp.get("Message"):
+                        error_message = json_resp.get("Message")
+                except Exception:
+                    pass
+                return False, "failed", error_message
+
+    def verify_2fa(self, code):
+        data = {
+            "code": code
+        }
+        try:
+            r = self.session.post(
+                "/Account/VerifyTwoFactor",
+                data=data,
+                headers={
+                    "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+                    "X-Requested-With": "XMLHttpRequest",
+                    "Accept": "application/json, text/javascript, */*; q=0.01",
+                    "Origin": self.base_url,
+                    "Referer": f"{self.base_url}/Account/Login",
+                }
+            )
+        except Exception as e:
+            return False, f"Gửi mã OTP thất bại: {str(e)}"
+
+        if ".ASPXAUTH" in self.session.cookies:
+            return True, None
+
+        response_text = r.text.strip()
+        if r.status_code == 200 and not response_text:
+            try:
+                test_resp = self.session.get(
+                    "/Home/GetNumberOfNewMessage",
+                    headers={
+                        "X-Requested-With": "XMLHttpRequest",
+                        "Referer": f"{self.base_url}/TiemChung/DoiTuong/Index"
+                    },
+                    timeout=5.0
+                )
+                if test_resp.status_code == 200 and ".ASPXAUTH" in self.session.cookies:
+                    return True, None
+            except Exception:
+                pass
+
+        if response_text:
+            try:
+                json_resp = r.json()
+                if json_resp.get("Success"):
+                    return True, None
+                else:
+                    return False, json_resp.get("Message", "Mã OTP không đúng.")
+            except Exception as e:
+                return False, f"Lỗi xử lý phản hồi từ server: {str(e)}"
+
+        return False, "Mã OTP không đúng hoặc đã hết hạn."
 
     def fetch_profile_and_plan(self):
         r = self.session.get("/KeHoachTiemPhatSinhArea/KeHoachTiemPhatSinh")

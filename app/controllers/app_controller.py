@@ -6,6 +6,7 @@ import os
 import re
 from ..services.vncdc_client import VncdcClient
 from ..utils import extract_phone_from_string, normalize_name
+from ..gui.otp_dialog import OtpDialog
 
 class AppController:
     def __init__(self, window, services, automation_logic):
@@ -46,27 +47,49 @@ class AppController:
         def login_task():
             try:
                 client = VncdcClient()
-                ok = client.login(username, password, remember)
-                if not ok:
-                    client.close()
-                    self.comm_queue.put(("login_result", False, "Sai tài khoản hoặc mật khẩu"))
+                success, status, data = client.login(username, password, remember)
+                if status == "2fa_required":
+                    self.comm_queue.put(("otp_required", client, data))
                     return
-
-                profile, ke_hoach_id = client.fetch_profile_and_plan()
-                self.vncdc_client = client
-                self.vncdc_profile = profile or {}
-                self.vncdc_ke_hoach_id = ke_hoach_id
-                
-                # Feature 3: Save credentials if successful
-                self.storage.save_credentials(username, password)
-                
-                msg = f"Đăng nhập thành công. KH_ID: {ke_hoach_id}"
-                self.comm_queue.put(("login_result", True, msg))
+                elif success:
+                    profile, ke_hoach_id = client.fetch_profile_and_plan()
+                    self.vncdc_client = client
+                    self.vncdc_profile = profile or {}
+                    self.vncdc_ke_hoach_id = ke_hoach_id
+                    
+                    # Feature 3: Save credentials if successful
+                    self.storage.save_credentials(username, password)
+                    
+                    msg = f"Đăng nhập thành công. KH_ID: {ke_hoach_id}"
+                    self.comm_queue.put(("login_result", True, msg))
+                else:
+                    client.close()
+                    self.comm_queue.put(("login_result", False, data or "Sai tài khoản hoặc mật khẩu"))
             except Exception as e:
                 self.comm_queue.put(("login_result", False, f"Lỗi: {str(e)}"))
 
         threading.Thread(target=login_task, daemon=True).start()
         self._schedule_queue_check()
+
+    def show_otp_and_verify(self, client, message):
+        def on_confirm(otp):
+            self.otp_dialog.set_loading(True)
+            self.otp_dialog.hide_error()
+            
+            def verify_task():
+                try:
+                    success, err = client.verify_2fa(otp)
+                    if success:
+                        profile, ke_hoach_id = client.fetch_profile_and_plan()
+                        self.comm_queue.put(("otp_verify_result", True, (client, profile, ke_hoach_id)))
+                    else:
+                        self.comm_queue.put(("otp_verify_result", False, err or "Mã OTP không chính xác"))
+                except Exception as e:
+                    self.comm_queue.put(("otp_verify_result", False, f"Lỗi: {str(e)}"))
+            
+            threading.Thread(target=verify_task, daemon=True).start()
+            
+        self.otp_dialog = OtpDialog(self.window, error_message=message, on_confirm_callback=on_confirm)
 
     def handle_vncdc_fetch(self, date_from, date_to):
         # Feature: Batch processing by XA_ID
@@ -283,6 +306,9 @@ class AppController:
             
             params["fail_image_path"] = self.window.image_path_vars[fail_image_key].get()
             params["ratelimit_image_path"] = self.window.image_path_vars[ratelimit_image_key].get()
+            # Ảnh rate limit thứ 2 cho cùng mode
+            ratelimit_image_key_2 = "web_ratelimit_path_2" if mode == "web" else "app_ratelimit_path_2"
+            params["ratelimit_image_path_2"] = self.window.image_path_vars[ratelimit_image_key_2].get()
             params["success_image_path"] = self.window.image_path_vars[success_img_key].get()
 
             if not os.path.exists(params["fail_image_path"]) or \
@@ -420,6 +446,32 @@ class AppController:
                     success, msg = message[1], message[2]
                     color = "green" if success else "red"
                     fetch_tab.set_login_status(msg, color, success)
+                    
+                elif msg_type == "otp_required":
+                    client, data = message[1], message[2]
+                    fetch_tab.set_login_status("Yêu cầu nhập OTP", "orange")
+                    self.show_otp_and_verify(client, data)
+                    
+                elif msg_type == "otp_verify_result":
+                    success, data = message[1], message[2]
+                    if success:
+                        client, profile, ke_hoach_id = data
+                        self.vncdc_client = client
+                        self.vncdc_profile = profile or {}
+                        self.vncdc_ke_hoach_id = ke_hoach_id
+                        
+                        username, password, _ = fetch_tab.get_login_info()
+                        self.storage.save_credentials(username, password)
+                        
+                        if hasattr(self, "otp_dialog") and self.otp_dialog.winfo_exists():
+                            self.otp_dialog._close()
+                            
+                        msg = f"Đăng nhập thành công. KH_ID: {ke_hoach_id}"
+                        fetch_tab.set_login_status(msg, "green", True)
+                    else:
+                        if hasattr(self, "otp_dialog") and self.otp_dialog.winfo_exists():
+                            self.otp_dialog.set_loading(False)
+                            self.otp_dialog.show_error(data)
                     
                 elif msg_type == "fetch_progress":
                     fetch_tab.set_fetch_status(message[1])

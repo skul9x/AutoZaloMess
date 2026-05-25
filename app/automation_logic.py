@@ -67,9 +67,11 @@ class AutomationLogic:
         self.controlled_sleep(1)
         pyautogui.hotkey("ctrl", "a")
         pyautogui.typewrite(phone)
+        self.controlled_sleep(1)
         
         images_to_check = {
             "rate_limited": params.get("ratelimit_image_path"),
+            "rate_limited_2": params.get("ratelimit_image_path_2"),
             "failed": params.get("fail_image_path"),
             "success": params.get("success_image_path")
         }
@@ -77,7 +79,7 @@ class AutomationLogic:
         self.log("Đang tìm kết quả...")
         found_state, location = self.wait_for_any_image(images_to_check, timeout=10)
 
-        if found_state == "rate_limited":
+        if found_state in ("rate_limited", "rate_limited_2"):
             self.log("!!! PHÁT HIỆN LỖI GIỚI HẠN TÌM KIẾM TỪ ZALO !!!")
             return "rate_limited"
 
@@ -89,6 +91,15 @@ class AutomationLogic:
             self.controlled_sleep(0.1)
             pyautogui.press("backspace")
             self.controlled_sleep(0.3)
+            
+            # Chờ ảnh "Không tìm thấy" biến mất khỏi màn hình để tránh kẹt cho số sau
+            fail_img = params.get("fail_image_path")
+            if fail_img and 'Chưa thiết lập' not in fail_img:
+                for _ in range(10):  # Tối đa ~2 giây
+                    if not self.check_image(fail_img):
+                        break
+                    self.controlled_sleep(0.2)
+                    
             return "failed"
             
         elif found_state == "success":
@@ -115,6 +126,15 @@ class AutomationLogic:
             self.controlled_sleep(0.1)
             pyautogui.press("backspace")
             self.controlled_sleep(0.3)
+
+            # Chờ ảnh "Không tìm thấy" hoặc kết quả cũ biến mất
+            fail_img = params.get("fail_image_path")
+            if fail_img and 'Chưa thiết lập' not in fail_img:
+                for _ in range(10):
+                    if not self.check_image(fail_img):
+                        break
+                    self.controlled_sleep(0.2)
+                    
             return "failed"
 
     def controlled_sleep(self, duration):

@@ -9,3 +9,7 @@ __pycache__/
 .brain/session.json
 
 # If you want to keep all code in repo, don't ignore docs or plans.
+
+venv/
+.pytest_cache/
+

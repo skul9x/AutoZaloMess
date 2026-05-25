@@ -33,6 +33,8 @@ class MainWindow(tk.Tk):
             "app_fail_path": tk.StringVar(value="Chưa thiết lập"),
             "web_ratelimit_path": tk.StringVar(value="Chưa thiết lập"),
             "app_ratelimit_path": tk.StringVar(value="Chưa thiết lập"),
+            "web_ratelimit_path_2": tk.StringVar(value="Chưa thiết lập"),
+            "app_ratelimit_path_2": tk.StringVar(value="Chưa thiết lập"),
             "web_success_path": tk.StringVar(value="Chưa thiết lập"),
             "app_success_path": tk.StringVar(value="Chưa thiết lập")
         }
