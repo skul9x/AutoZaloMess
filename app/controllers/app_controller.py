@@ -4,8 +4,9 @@ import queue
 import time
 import os
 import re
+from tkinter import filedialog, messagebox
 from ..services.vncdc_client import VncdcClient
-from ..utils import extract_phone_from_string, normalize_name
+from ..utils import extract_phone_from_string, normalize_name, save_json, load_json
 from ..gui.otp_dialog import OtpDialog
 
 class AppController:
@@ -528,3 +529,79 @@ class AppController:
         if tab.cancel_button["state"] == tk.NORMAL:
             self.comm_queue.put(("log", "--- Phím nóng F11 được nhấn: Hủy bỏ ---"))
             self.handle_cancel()
+
+    def backup_contacts(self):
+        """Sao lưu danh sách liên hệ hiện tại ra file JSON."""
+        if not self.contacts:
+            messagebox.showwarning("Cảnh báo", "Không có liên hệ nào để sao lưu.")
+            return
+        
+        file_path = filedialog.asksaveasfilename(
+            defaultextension=".json",
+            filetypes=[("JSON files", "*.json")],
+            title="Chọn nơi lưu file sao lưu"
+        )
+        if file_path:
+            try:
+                save_json(file_path, self.contacts)
+                messagebox.showinfo("Thành công", f"Đã sao lưu {len(self.contacts)} liên hệ thành công.")
+            except Exception as e:
+                messagebox.showerror("Lỗi", f"Không thể lưu file sao lưu:\n{e}")
+
+    def restore_contacts(self):
+        """Khôi phục danh sách liên hệ từ file JSON sao lưu."""
+        file_path = filedialog.askopenfilename(
+            filetypes=[("JSON files", "*.json")],
+            title="Chọn file sao lưu để khôi phục"
+        )
+        if not file_path:
+            return
+            
+        data = load_json(file_path, None)
+        if data is None or not isinstance(data, list):
+            messagebox.showerror("Lỗi", "File không hợp lệ hoặc không đúng định dạng danh sách JSON.")
+            return
+            
+        valid_contacts = []
+        for item in data:
+            if not isinstance(item, dict) or "phone" not in item or "name" not in item:
+                messagebox.showerror("Lỗi", "Cấu trúc dữ liệu liên hệ trong file không hợp lệ (mỗi liên hệ cần có 'phone' và 'name').")
+                return
+            
+            phone = str(item["phone"]).strip()
+            name = str(item["name"]).strip()
+            status = item.get("status", "Chờ gửi")
+            valid_contacts.append({"phone": phone, "name": name, "status": status})
+            
+        if not valid_contacts:
+            messagebox.showwarning("Cảnh báo", "File sao lưu trống hoặc không chứa liên hệ hợp lệ.")
+            return
+            
+        choice = messagebox.askyesnocancel(
+            "Xác nhận khôi phục",
+            "Bạn muốn khôi phục dữ liệu bằng cách nào?\n\n"
+            "- Chọn 'Yes' (Ghi đè): Thay thế hoàn toàn danh sách hiện có.\n"
+            "- Chọn 'No' (Thêm tiếp): Ghép thêm liên hệ mới vào danh sách (không trùng SĐT).\n"
+            "- Chọn 'Cancel': Hủy thao tác."
+        )
+        
+        if choice is None:
+            # Cancel
+            return
+        elif choice is True:
+            # Overwrite
+            self.contacts = valid_contacts
+            messagebox.showinfo("Thành công", f"Đã ghi đè thành công {len(valid_contacts)} liên hệ.")
+        else:
+            # Merge
+            existing_phones = {c["phone"] for c in self.contacts}
+            added_count = 0
+            for item in valid_contacts:
+                if item["phone"] not in existing_phones:
+                    self.contacts.append(item)
+                    existing_phones.add(item["phone"])
+                    added_count += 1
+            messagebox.showinfo("Thành công", f"Đã thêm nối tiếp thành công {added_count} liên hệ mới.")
+            
+        self.update_contact_list()
+        self.update_ui_state()

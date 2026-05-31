@@ -94,7 +94,9 @@ class MainWindow(tk.Tk):
             "delete_selected_contacts": self.controller.delete_selected_contacts,
             "export_report": self.controller.export_report,
             "capture_coordinate": self.controller.capture_coordinate,
-            "handle_load_fail_image": self.controller.handle_load_fail_image
+            "handle_load_fail_image": self.controller.handle_load_fail_image,
+            "backup_contacts": self.controller.backup_contacts,
+            "restore_contacts": self.controller.restore_contacts
         }
 
         fetch_callbacks = {

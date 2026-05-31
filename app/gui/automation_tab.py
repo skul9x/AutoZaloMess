@@ -61,6 +61,10 @@ class AutomationTab(ttk.Frame):
         ttk.Button(list_manage_frame, text="Xóa đã chọn", command=self.callbacks["delete_selected_contacts"]).pack(side="right")
         self.export_button = ttk.Button(list_manage_frame, text="Xuất báo cáo CSV", command=self.callbacks["export_report"])
         self.export_button.pack(side="right", padx=5)
+        self.backup_button = ttk.Button(list_manage_frame, text="Sao lưu (Backup)", command=self.callbacks["backup_contacts"])
+        self.backup_button.pack(side="right", padx=5)
+        self.restore_button = ttk.Button(list_manage_frame, text="Khôi phục (Restore)", command=self.callbacks["restore_contacts"])
+        self.restore_button.pack(side="right", padx=5)
 
         right_frame = ttk.Frame(main_frame)
         right_frame.grid(row=0, column=1, sticky="nsew")
@@ -194,6 +198,8 @@ class AutomationTab(ttk.Frame):
         self.start_button.config(state=start_state)
         self.cancel_button.config(state=cancel_state)
         self.export_button.config(state=export_state)
+        self.backup_button.config(state=export_state)
+        self.restore_button.config(state=radio_state)
         self.radio_app.config(state=radio_state)
         self.radio_web.config(state=radio_state)
         if pause_visible:
