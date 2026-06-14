@@ -235,3 +235,20 @@ class VncdcClient:
         
         # We assume the response format is the same as the search result
         return parse_search_response(r.text)
+
+    def get_doi_tuong_phone(self, doi_tuong_id):
+        try:
+            r = self.session.get(
+                f"/TiemChung/DoiTuong/Edit?doiTuongId={doi_tuong_id}",
+                headers={
+                    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                    "Referer": f"{self.base_url}/TiemChung/DoiTuong/Index",
+                    "X-Requested-With": "XMLHttpRequest",
+                }
+            )
+            r.raise_for_status()
+            from .vncdc_parser import parse_doi_tuong_phone_from_edit_page
+            return parse_doi_tuong_phone_from_edit_page(r.text)
+        except Exception as e:
+            print(f"Error fetching phone for object {doi_tuong_id}: {e}")
+            return ""

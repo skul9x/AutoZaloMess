@@ -13,3 +13,9 @@ __pycache__/
 venv/
 .pytest_cache/
 
+# Local captures and temporary dumps
+sdt/
+sdt_ok/
+curl_capture_*/
+*.zip
+123.md

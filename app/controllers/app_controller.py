@@ -187,6 +187,15 @@ class AppController:
                     phone = extract_phone_from_string(raw_info)
                     
                     if not phone:
+                        doi_tuong_id_raw = it.get("doi_tuong_id", "")
+                        if doi_tuong_id_raw:
+                            clean_id = doi_tuong_id_raw.split(",")[0].strip()
+                            if clean_id:
+                                self.comm_queue.put(("fetch_progress", f"Đang lấy SĐT cho {it.get('ho_ten', 'đối tượng')}..."))
+                                phone = self.vncdc_client.get_doi_tuong_phone(clean_id)
+                                time.sleep(0.15)
+                    
+                    if not phone:
                         continue
                     
                     if phone in seen_phones:

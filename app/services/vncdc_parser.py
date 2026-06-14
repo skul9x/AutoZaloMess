@@ -72,3 +72,29 @@ def parse_search_response(html):
         "items": items,
         "raw_html": html,
     }
+
+def parse_doi_tuong_phone_from_edit_page(html):
+    # Try parsing the TiemChung$DoiTuong$EditModel JSON variable first
+    m = re.search(r'var\s+TiemChung\$DoiTuong\$EditModel\s*=\s*(\{.*?\});', html)
+    if m:
+        try:
+            import json
+            data = json.loads(m.group(1))
+            # Check phone fields in order of priority: target, mother, father, guardian
+            for field in ["DienThoai", "DienThoaiMe", "DienThoaiBo", "DienThoaiNguoiGiamHo"]:
+                val = data.get(field)
+                if val and val.strip() and "********" not in val:
+                    return val.strip()
+        except Exception:
+            pass
+
+    # Fallback to BeautifulSoup to find input fields
+    soup = BeautifulSoup(html, "html.parser")
+    # check inputs by id
+    for input_id in ["txtDienThoai_Sua", "txtDienThoaiMe_Sua", "txtDienThoaiBo_Sua", "txtDienThoaiNguoiGiamHo_Sua"]:
+        el = soup.find("input", {"id": input_id})
+        if el and el.get("value"):
+            val = el["value"].strip()
+            if val and "********" not in val:
+                return val
+    return ""
