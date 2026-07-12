@@ -17,10 +17,10 @@ def test_get_doi_tuong_phone_success():
     mock_response.status_code = 200
     
     with patch.object(client.session, "get", return_value=mock_response) as mock_get:
-        phone = client.get_doi_tuong_phone("78875959")
+        phone = client.get_doi_tuong_phone("78875959", ho_ten="Nguyễn Duy Minh Khôi")
         assert phone == "0365240748"
         mock_get.assert_called_once_with(
-            "/TiemChung/DoiTuong/Edit?doiTuongId=78875959",
+            "/TiemChung/DoiTuong/Edit?doiTuongId=78875959&hoTen=Nguy%E1%BB%85n+Duy+Minh+Kh%C3%B4i",
             headers={
                 "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
                 "Referer": "https://tiemchung.vncdc.gov.vn/TiemChung/DoiTuong/Index",

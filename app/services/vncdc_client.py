@@ -236,10 +236,14 @@ class VncdcClient:
         # We assume the response format is the same as the search result
         return parse_search_response(r.text)
 
-    def get_doi_tuong_phone(self, doi_tuong_id):
+    def get_doi_tuong_phone(self, doi_tuong_id, ho_ten=None):
         try:
+            url = f"/TiemChung/DoiTuong/Edit?doiTuongId={doi_tuong_id}"
+            if ho_ten:
+                import urllib.parse
+                url += f"&hoTen={urllib.parse.quote_plus(ho_ten)}"
             r = self.session.get(
-                f"/TiemChung/DoiTuong/Edit?doiTuongId={doi_tuong_id}",
+                url,
                 headers={
                     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
                     "Referer": f"{self.base_url}/TiemChung/DoiTuong/Index",

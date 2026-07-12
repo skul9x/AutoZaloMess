@@ -1,0 +1,78 @@
+Microsoft Windows [Version 10.0.19045.6466]
+(c) Microsoft Corporation. All rights reserved.
+
+D:\skul9x\AutoZaloMess-main>python main.py
+Error fetching phone for object 79271890: Server error '500 Internal Server Error' for url 'https://tiemchung.vncdc.gov.vn/TiemChung/DoiTuong/Edit?doiTuongId=79271890'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+Error fetching phone for object 79271873: Server error '500 Internal Server Error' for url 'https://tiemchung.vncdc.gov.vn/TiemChung/DoiTuong/Edit?doiTuongId=79271873'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+Error fetching phone for object 79243498: Server error '500 Internal Server Error' for url 'https://tiemchung.vncdc.gov.vn/TiemChung/DoiTuong/Edit?doiTuongId=79243498'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+Error fetching phone for object 79223382: Server error '500 Internal Server Error' for url 'https://tiemchung.vncdc.gov.vn/TiemChung/DoiTuong/Edit?doiTuongId=79223382'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+Error fetching phone for object 79219600: Server error '500 Internal Server Error' for url 'https://tiemchung.vncdc.gov.vn/TiemChung/DoiTuong/Edit?doiTuongId=79219600'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+Error fetching phone for object 79201121: Server error '500 Internal Server Error' for url 'https://tiemchung.vncdc.gov.vn/TiemChung/DoiTuong/Edit?doiTuongId=79201121'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+Error fetching phone for object 79192454: Server error '500 Internal Server Error' for url 'https://tiemchung.vncdc.gov.vn/TiemChung/DoiTuong/Edit?doiTuongId=79192454'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+Error fetching phone for object 79255435: Server error '500 Internal Server Error' for url 'https://tiemchung.vncdc.gov.vn/TiemChung/DoiTuong/Edit?doiTuongId=79255435'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+Error fetching phone for object 79245978: Server error '500 Internal Server Error' for url 'https://tiemchung.vncdc.gov.vn/TiemChung/DoiTuong/Edit?doiTuongId=79245978'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+Error fetching phone for object 79253797: Server error '500 Internal Server Error' for url 'https://tiemchung.vncdc.gov.vn/TiemChung/DoiTuong/Edit?doiTuongId=79253797'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+Error fetching phone for object 79233823: Server error '500 Internal Server Error' for url 'https://tiemchung.vncdc.gov.vn/TiemChung/DoiTuong/Edit?doiTuongId=79233823'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+Error fetching phone for object 79267369: Server error '500 Internal Server Error' for url 'https://tiemchung.vncdc.gov.vn/TiemChung/DoiTuong/Edit?doiTuongId=79267369'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+Error fetching phone for object 79229973: Server error '500 Internal Server Error' for url 'https://tiemchung.vncdc.gov.vn/TiemChung/DoiTuong/Edit?doiTuongId=79229973'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+Error fetching phone for object 79226634: Server error '500 Internal Server Error' for url 'https://tiemchung.vncdc.gov.vn/TiemChung/DoiTuong/Edit?doiTuongId=79226634'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+Error fetching phone for object 79262833: Server error '500 Internal Server Error' for url 'https://tiemchung.vncdc.gov.vn/TiemChung/DoiTuong/Edit?doiTuongId=79262833'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+Error fetching phone for object 79268889: Server error '500 Internal Server Error' for url 'https://tiemchung.vncdc.gov.vn/TiemChung/DoiTuong/Edit?doiTuongId=79268889'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+Error fetching phone for object 79244539: Server error '500 Internal Server Error' for url 'https://tiemchung.vncdc.gov.vn/TiemChung/DoiTuong/Edit?doiTuongId=79244539'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+Error fetching phone for object 79254225: Server error '500 Internal Server Error' for url 'https://tiemchung.vncdc.gov.vn/TiemChung/DoiTuong/Edit?doiTuongId=79254225'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+Error fetching phone for object 79225110: Server error '500 Internal Server Error' for url 'https://tiemchung.vncdc.gov.vn/TiemChung/DoiTuong/Edit?doiTuongId=79225110'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+Error fetching phone for object 79215136: Server error '500 Internal Server Error' for url 'https://tiemchung.vncdc.gov.vn/TiemChung/DoiTuong/Edit?doiTuongId=79215136'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+Error fetching phone for object 79184395: Server error '500 Internal Server Error' for url 'https://tiemchung.vncdc.gov.vn/TiemChung/DoiTuong/Edit?doiTuongId=79184395'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+Error fetching phone for object 79244772: Server error '500 Internal Server Error' for url 'https://tiemchung.vncdc.gov.vn/TiemChung/DoiTuong/Edit?doiTuongId=79244772'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+Error fetching phone for object 79238792: Server error '500 Internal Server Error' for url 'https://tiemchung.vncdc.gov.vn/TiemChung/DoiTuong/Edit?doiTuongId=79238792'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+Error fetching phone for object 79225842: Server error '500 Internal Server Error' for url 'https://tiemchung.vncdc.gov.vn/TiemChung/DoiTuong/Edit?doiTuongId=79225842'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+Error fetching phone for object 79210005: Server error '500 Internal Server Error' for url 'https://tiemchung.vncdc.gov.vn/TiemChung/DoiTuong/Edit?doiTuongId=79210005'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+Error fetching phone for object 79194756: Server error '500 Internal Server Error' for url 'https://tiemchung.vncdc.gov.vn/TiemChung/DoiTuong/Edit?doiTuongId=79194756'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+Error fetching phone for object 79172379: Server error '500 Internal Server Error' for url 'https://tiemchung.vncdc.gov.vn/TiemChung/DoiTuong/Edit?doiTuongId=79172379'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+Error fetching phone for object 79264225: Server error '500 Internal Server Error' for url 'https://tiemchung.vncdc.gov.vn/TiemChung/DoiTuong/Edit?doiTuongId=79264225'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+Error fetching phone for object 79226868: Server error '500 Internal Server Error' for url 'https://tiemchung.vncdc.gov.vn/TiemChung/DoiTuong/Edit?doiTuongId=79226868'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+Error fetching phone for object 79214706: Server error '500 Internal Server Error' for url 'https://tiemchung.vncdc.gov.vn/TiemChung/DoiTuong/Edit?doiTuongId=79214706'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+Error fetching phone for object 79209522: Server error '500 Internal Server Error' for url 'https://tiemchung.vncdc.gov.vn/TiemChung/DoiTuong/Edit?doiTuongId=79209522'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+Error fetching phone for object 79267503: Server error '500 Internal Server Error' for url 'https://tiemchung.vncdc.gov.vn/TiemChung/DoiTuong/Edit?doiTuongId=79267503'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+Error fetching phone for object 79238460: Server error '500 Internal Server Error' for url 'https://tiemchung.vncdc.gov.vn/TiemChung/DoiTuong/Edit?doiTuongId=79238460'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+Error fetching phone for object 79237465: Server error '500 Internal Server Error' for url 'https://tiemchung.vncdc.gov.vn/TiemChung/DoiTuong/Edit?doiTuongId=79237465'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+Error fetching phone for object 79191550: Server error '500 Internal Server Error' for url 'https://tiemchung.vncdc.gov.vn/TiemChung/DoiTuong/Edit?doiTuongId=79191550'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+Error fetching phone for object 79195341: Server error '500 Internal Server Error' for url 'https://tiemchung.vncdc.gov.vn/TiemChung/DoiTuong/Edit?doiTuongId=79195341'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+Error fetching phone for object 79175972: Server error '500 Internal Server Error' for url 'https://tiemchung.vncdc.gov.vn/TiemChung/DoiTuong/Edit?doiTuongId=79175972'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
