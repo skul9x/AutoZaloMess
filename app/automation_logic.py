@@ -3,6 +3,7 @@ import threading
 import time
 import pyautogui
 import pyperclip
+from .utils import format_message_for_contact
 
 class AutomationLogic:
     def __init__(self, comm_queue):
@@ -50,14 +51,14 @@ class AutomationLogic:
             time.sleep(0.3)
         return None, None
 
-    def process_contact(self, phone, name, message_template, params):
+    def process_contact(self, phone, name, message_template, params, is_mother=True):
         if not self.running:
             return "stopped"
         self.log("-" * 30)
         self.log(f"Đang xử lý SĐT: {phone} | Tên: {name}")
 
         try:
-            formatted_message = message_template.format(name=name, phone=phone)
+            formatted_message = format_message_for_contact(message_template, name=name, phone=phone, is_mother=is_mother)
         except KeyError as e:
             self.log(f"LỖI: Nội dung tin nhắn có chứa biến không hợp lệ {e}.")
             self.stop()
@@ -163,7 +164,10 @@ class AutomationLogic:
                 self.log("Tác vụ đã bị hủy bởi người dùng.")
                 break
             
-            status = self.process_contact(contact["phone"], contact["name"], message_template, params)
+            if isinstance(contact, dict) and "is_mother" in contact:
+                status = self.process_contact(contact["phone"], contact["name"], message_template, params, is_mother=contact["is_mother"])
+            else:
+                status = self.process_contact(contact["phone"], contact["name"], message_template, params)
             
             if status == "rate_limited":
                 self.comm_queue.put(("stopped_due_to_ratelimit",))

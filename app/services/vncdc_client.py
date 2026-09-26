@@ -256,3 +256,161 @@ class VncdcClient:
         except Exception as e:
             print(f"Error fetching phone for object {doi_tuong_id}: {e}")
             return ""
+
+    def nhap_bo_sung_doi_tuong(self, ke_hoach_id, doi_tuong_ids, buoi_tiem=1, force_save=0):
+        """
+        Thêm danh sách đối tượng vào buổi tiêm trong kế hoạch.
+        POST /KeHoachTiemPhatSinhArea/NhapBoSung/NhapBoSungDoiTuong/
+        """
+        if isinstance(doi_tuong_ids, (int, str)):
+            ids = [doi_tuong_ids]
+        else:
+            ids = list(doi_tuong_ids)
+
+        du_lieu_da_chon = []
+        for item in ids:
+            if isinstance(item, dict) and "DOI_TUONG_ID" in item:
+                du_lieu_da_chon.append(item)
+            else:
+                try:
+                    val = int(item)
+                except (ValueError, TypeError):
+                    val = item
+                du_lieu_da_chon.append({
+                    "DOI_TUONG_ID": val,
+                    "DANH_SACH_VACXIN": []
+                })
+
+        try:
+            fs = int(force_save)
+        except (ValueError, TypeError):
+            fs = force_save
+
+        payload = {
+            "DU_LIEU_DA_CHON": du_lieu_da_chon,
+            "KE_HOACH_TIEM_ID": str(ke_hoach_id),
+            "BUOI_TIEM": str(buoi_tiem),
+            "FORCE_SAVE": fs,
+        }
+
+        headers = {
+            "Accept": "application/json, text/javascript, */*; q=0.01",
+            "Content-Type": "application/json; charset=UTF-8",
+            "Origin": self.base_url,
+            "Referer": f"{self.base_url}/KeHoachTiemPhatSinhArea/KeHoachTiemPhatSinh",
+            "X-Requested-With": "XMLHttpRequest",
+        }
+        token = self.session.cookies.get("__RequestVerificationToken")
+        if token:
+            headers["__RequestVerificationToken"] = token
+
+        try:
+            r = self.session.post(
+                "/KeHoachTiemPhatSinhArea/NhapBoSung/NhapBoSungDoiTuong/",
+                json=payload,
+                headers=headers,
+                timeout=30.0,
+            )
+            r.raise_for_status()
+            res = r.json()
+            if isinstance(res, dict):
+                res.setdefault("success", res.get("Status") == 2)
+                return res
+            return {"Status": -1, "Message": "Invalid response format", "success": False}
+        except Exception as e:
+            return {"Status": -1, "Message": str(e), "success": False}
+
+    def get_danh_sach_hen_tiem(self, ke_hoach_id, buoi_tiem=0, trang_thai=-1):
+        """
+        Lấy danh sách đối tượng hẹn tiêm trong kế hoạch để trích xuất số điện thoại unmasked.
+        POST /KeHoachTiemPhatSinhArea/KeHoachTiemPhatSinh/GetDanhSachHenTiemByParams
+        """
+        try:
+            kid = int(ke_hoach_id)
+        except (ValueError, TypeError):
+            kid = ke_hoach_id
+
+        payload = {
+            "KE_HOACH_TIEM_ID": kid,
+            "BUOI_TIEM": str(buoi_tiem),
+            "TRANG_THAI_TIEM": str(trang_thai),
+        }
+
+        headers = {
+            "Accept": "application/json, text/javascript, */*; q=0.01",
+            "Content-Type": "application/json; charset=UTF-8",
+            "Origin": self.base_url,
+            "Referer": f"{self.base_url}/KeHoachTiemPhatSinhArea/KeHoachTiemPhatSinh",
+            "X-Requested-With": "XMLHttpRequest",
+        }
+        token = self.session.cookies.get("__RequestVerificationToken")
+        if token:
+            headers["__RequestVerificationToken"] = token
+
+        try:
+            r = self.session.post(
+                "/KeHoachTiemPhatSinhArea/KeHoachTiemPhatSinh/GetDanhSachHenTiemByParams",
+                json=payload,
+                headers=headers,
+                timeout=30.0,
+            )
+            r.raise_for_status()
+            data = r.json()
+            if isinstance(data, dict):
+                return data.get("ThongTinHenTiem") or []
+            elif isinstance(data, list):
+                return data
+            return []
+        except Exception as e:
+            print(f"Error getting danh sach hen tiem: {e}")
+            return []
+
+    def xoa_doi_tuong_hen_tiem(self, ke_hoach_id, doi_tuong_id, ke_hoach_tiem_ct_id, thoi_gian_tiem=0):
+        """
+        Xóa đối tượng khỏi danh sách hẹn tiêm của kế hoạch.
+        POST /KeHoachTiemPhatSinhArea/KeHoachTiemPhatSinh/XoaDoiTuongDSHenTiem
+        Trả về True nếu server phản hồi 1.
+        """
+        def _to_int_or_val(val):
+            try:
+                return int(val)
+            except (ValueError, TypeError):
+                return val
+
+        payload = {
+            "KE_HOACH_TIEM_CT_ID": _to_int_or_val(ke_hoach_tiem_ct_id),
+            "DOI_TUONG_ID": _to_int_or_val(doi_tuong_id),
+            "THOI_GIAN_TIEM": _to_int_or_val(thoi_gian_tiem),
+            "KE_HOACH_TIEM_ID": _to_int_or_val(ke_hoach_id),
+        }
+
+        headers = {
+            "Accept": "application/json, text/javascript, */*; q=0.01",
+            "Content-Type": "application/json; charset=UTF-8",
+            "Origin": self.base_url,
+            "Referer": f"{self.base_url}/KeHoachTiemPhatSinhArea/KeHoachTiemPhatSinh",
+            "X-Requested-With": "XMLHttpRequest",
+        }
+        token = self.session.cookies.get("__RequestVerificationToken")
+        if token:
+            headers["__RequestVerificationToken"] = token
+
+        try:
+            r = self.session.post(
+                "/KeHoachTiemPhatSinhArea/KeHoachTiemPhatSinh/XoaDoiTuongDSHenTiem",
+                json=payload,
+                headers=headers,
+                timeout=30.0,
+            )
+            r.raise_for_status()
+            text = r.text.strip()
+            if text == "1":
+                return True
+            try:
+                val = r.json()
+                return val == 1 or val is True or (isinstance(val, dict) and val.get("Success") is True)
+            except Exception:
+                return False
+        except Exception as e:
+            print(f"Error deleting target {doi_tuong_id} from plan: {e}")
+            return False

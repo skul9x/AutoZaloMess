@@ -1,5 +1,17 @@
 # Changelog
 
+## [2026-09-26] - v2.3.0 (VNCDC Temporary Plan Injection & Safe Cleanup Flow)
+### Added
+- **VNCDC Temporary Plan Injection**: Tích hợp API `nhap_bo_sung_doi_tuong` (bổ sung đối tượng vào kế hoạch) để trích xuất số điện thoại unmasked qua `GetDanhSachHenTiemByParams`.
+- **Safe Cleanup Guarantee**: Bổ sung cơ chế dọn dẹp đối tượng tự động trong khối `try ... finally` qua API `XoaDoiTuongDSHenTiem`, đảm bảo khôi phục nguyên trạng kế hoạch tiêm mà không ảnh hưởng tới dữ liệu có sẵn từ trước.
+- **Unit Tests Suite**: Viết bộ unit test toàn diện cho luồng API client (`test_vncdc_client_plan_flow.py`) và bộ điều khiển (`test_app_controller_fetch_cleanup.py`).
+
+### Changed
+- Cập nhật luồng lấy danh sách trong `AppController` (`fetch_task`) để tìm kiếm qua các xã (`XA_ID`), gom nhóm batch injection và parse thông tin phụ huynh/SĐT trực tiếp từ lịch hẹn.
+- Đồng bộ bộ nhớ kiến thức dự án `.brain/` (brain.json, session.json).
+
+---
+
 ## [2026-03-08] - v2.1.0 (RPA Safety Update)
 ### Added
 - **Anti-Duplicate Check**: App tự động bỏ qua (skip) các số điện thoại đã có trạng thái "Thành công" trong cùng phiên chạy, giúp ngăn chặn việc gửi trùng tin nhắn khi khởi động lại kịch bản.

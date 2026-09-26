@@ -6,7 +6,7 @@ import os
 import re
 from tkinter import filedialog, messagebox
 from ..services.vncdc_client import VncdcClient
-from ..utils import extract_phone_from_string, normalize_name, save_json, load_json
+from ..utils import extract_phone_from_string, normalize_name, clean_contact_name_and_role, save_json, load_json
 from ..gui.otp_dialog import OtpDialog
 
 class AppController:
@@ -113,20 +113,43 @@ class AppController:
         self.window.fetch_tab.fetch_btn.config(state=tk.DISABLED)
 
         def fetch_task():
+            added_doi_tuong_ids = set()
+            cleanup_targets = []
+            seen_cleanup = set()
+            new_contacts = []
+            count_added = 0
+            count_skipped = 0
+            seen_phones = set()
+            error_occurred = False
+            error_message = None
+
             try:
-                all_items = []
+                target_ids = []
+                seen_target_ids = set()
                 total_xas = len(xa_ids)
                 
                 tinh_id = self.vncdc_profile.get("tinh_id") or 106
                 huyen_id = self.vncdc_profile.get("huyen_id") or 10605
-                # xa_id will be dynamic
                 thon_id = self.vncdc_profile.get("thon_id") or -1
                 
                 self.comm_queue.put(("fetch_progress", f"Bắt đầu lấy dữ liệu cho {total_xas} xã..."))
 
+                def _extract_ids_from_items(items):
+                    for it in items:
+                        raw_id = it.get("doi_tuong_id")
+                        if raw_id is not None:
+                            clean_str = str(raw_id).split(",")[0].strip()
+                            if clean_str.isdigit():
+                                dt_id = int(clean_str)
+                                if dt_id not in seen_target_ids:
+                                    seen_target_ids.add(dt_id)
+                                    target_ids.append(dt_id)
+
+                # 1. Target Search: Query each commune across all pages
                 for idx, xa_id_str in enumerate(xa_ids, 1):
                     xa_id = xa_id_str.strip()
-                    if not xa_id: continue
+                    if not xa_id:
+                        continue
                     
                     self.comm_queue.put(("fetch_progress", f"[{idx}/{total_xas}] Đang tải dữ liệu xã {xa_id}..."))
                     
@@ -149,12 +172,9 @@ class AppController:
                     base_payload["PageNumber"] = "1"
                     try:
                         first_res = self.vncdc_client.search_doi_tuong(base_payload)
-                        items_p1 = first_res.get("items", [])
-                        all_items.extend(items_p1)
+                        _extract_ids_from_items(first_res.get("items", []))
                         
                         total_page = first_res.get("total_page", 1)
-                        # total_item = first_res.get("total_item", 0)
-                        
                         if total_page > 1:
                             self.comm_queue.put(("fetch_progress", f"[{idx}/{total_xas}] Xã {xa_id}: Đang tải trang 1/{total_page}..."))
 
@@ -163,69 +183,139 @@ class AppController:
                             self.comm_queue.put(("fetch_progress", f"[{idx}/{total_xas}] Xã {xa_id}: Đang tải trang {p}/{total_page}..."))
                             base_payload["PageNumber"] = str(p)
                             res = self.vncdc_client.search_doi_tuong(base_payload)
-                            all_items.extend(res.get("items", []))
+                            _extract_ids_from_items(res.get("items", []))
                             time.sleep(0.1)
                             
                     except Exception as e:
                         print(f"Error fetching XA {xa_id}: {e}")
-                        # self.comm_queue.put(("fetch_progress", f"Lỗi xã {xa_id}: {e}"))
-                        # Continue to next XA
                         pass
                     
-                    # Small delay between XAs
                     time.sleep(0.5)
 
-                # Process all items (deduplication logic)
-                new_contacts = []
-                count_added = 0
-                count_skipped = 0
-                
-                seen_phones = set()
+                if not target_ids:
+                    self.comm_queue.put(("fetch_progress", "Không tìm thấy đối tượng nào."))
+                    return
 
-                for it in all_items:
-                    raw_info = it.get("nguoi_cham_soc", "")
-                    phone = extract_phone_from_string(raw_info)
-                    
-                    if not phone:
-                        doi_tuong_id_raw = it.get("doi_tuong_id", "")
-                        if doi_tuong_id_raw:
-                            clean_id = doi_tuong_id_raw.split(",")[0].strip()
-                            if clean_id:
-                                self.comm_queue.put(("fetch_progress", f"Đang lấy SĐT cho {it.get('ho_ten', 'đối tượng')}..."))
-                                phone = self.vncdc_client.get_doi_tuong_phone(clean_id, ho_ten=it.get("ho_ten"))
-                                time.sleep(0.15)
-                    
+                # 2. Temporary Injection: Batch target IDs into active plan
+                BATCH_SIZE = 50
+                for i in range(0, len(target_ids), BATCH_SIZE):
+                    batch = target_ids[i:i + BATCH_SIZE]
+                    self.comm_queue.put(("fetch_progress", f"Đang thêm tạm thời {len(batch)} đối tượng vào kế hoạch..."))
+                    added_doi_tuong_ids.update(batch)
+                    self.vncdc_client.nhap_bo_sung_doi_tuong(
+                        ke_hoach_id=self.vncdc_ke_hoach_id,
+                        doi_tuong_ids=batch,
+                        buoi_tiem=1,
+                        force_save=0
+                    )
+                    time.sleep(0.1)
+
+                # 3. Retrieve full contact details from appointment list
+                self.comm_queue.put(("fetch_progress", "Đang tải danh sách hẹn tiêm để trích xuất SĐT..."))
+                appointments = self.vncdc_client.get_danh_sach_hen_tiem(self.vncdc_ke_hoach_id)
+
+                # Record details for cleanup
+                for appt in appointments:
+                    try:
+                        raw_dt = appt.get("DOI_TUONG_ID")
+                        if raw_dt is not None:
+                            dt_id = int(str(raw_dt).split(",")[0].strip())
+                            if dt_id in added_doi_tuong_ids:
+                                ct_id = appt.get("KE_HOACH_TIEM_CHI_TIET_ID")
+                                thoi_gian_tiem = appt.get("THOI_GIAN_TIEM", 0)
+                                if (dt_id, ct_id) not in seen_cleanup:
+                                    seen_cleanup.add((dt_id, ct_id))
+                                    cleanup_targets.append((dt_id, ct_id, thoi_gian_tiem))
+                    except (ValueError, TypeError):
+                        continue
+
+                # 4. Extract contacts
+                for appt in appointments:
+                    try:
+                        raw_dt = appt.get("DOI_TUONG_ID")
+                        if raw_dt is None:
+                            continue
+                        dt_id = int(str(raw_dt).split(",")[0].strip())
+                        if dt_id not in added_doi_tuong_ids:
+                            continue
+                    except (ValueError, TypeError):
+                        continue
+
+                    raw_phone = str(appt.get("DIEN_THOAI") or "").strip()
+                    phone = extract_phone_from_string(raw_phone)
                     if not phone:
                         continue
-                    
+
                     if phone in seen_phones:
                         continue
                     seen_phones.add(phone)
-                        
-                    name_temp = raw_info.replace(phone, "").strip(" -:.")
-                    name_clean = re.sub(r'^M_|^M- ?|^M - ', '', name_temp).strip()
 
-                    if not name_clean or len(name_clean) < 2:
-                        child_name = it.get("ho_ten", "")
-                        name_clean = f"PH bé {child_name}"
-
-                    # Feature 1: Auto format name to Title Case
-                    name_final = normalize_name(name_clean)
+                    ten_me = (appt.get("TEN_ME") or "").strip()
+                    child_name = (appt.get("HO_TEN") or "").strip()
+                    name_final, is_mother = clean_contact_name_and_role(ten_me, child_name)
 
                     status = "Đã gửi trước đó" if phone in self.sent_phones else "Chờ gửi"
                     if status == "Đã gửi trước đó":
                         count_skipped += 1
                     else:
                         count_added += 1
-                    
-                    new_contacts.append({"name": name_final, "phone": phone, "status": status})
 
-                self.comm_queue.put(("fetch_success", new_contacts, count_added, count_skipped))
+                    new_contacts.append({
+                        "name": name_final,
+                        "phone": phone,
+                        "status": status,
+                        "is_mother": is_mother
+                    })
 
             except Exception as e:
-                self.comm_queue.put(("fetch_error", str(e)))
+                error_occurred = True
+                error_message = str(e)
+                print(f"Error during VNCDC fetch: {e}")
+
             finally:
+                # 5. Strict Cleanup Guarantee: delete all targets injected in this session
+                if added_doi_tuong_ids:
+                    self.comm_queue.put(("fetch_progress", "Đang dọn dẹp các đối tượng tạm thời..."))
+                    
+                    cleaned_ids = {item[0] for item in cleanup_targets}
+                    unresolved_ids = added_doi_tuong_ids - cleaned_ids
+                    if unresolved_ids:
+                        try:
+                            fresh_appts = self.vncdc_client.get_danh_sach_hen_tiem(self.vncdc_ke_hoach_id)
+                            for appt in fresh_appts:
+                                try:
+                                    raw_dt = appt.get("DOI_TUONG_ID")
+                                    if raw_dt is not None:
+                                        dt_id = int(str(raw_dt).split(",")[0].strip())
+                                        if dt_id in unresolved_ids:
+                                            ct_id = appt.get("KE_HOACH_TIEM_CHI_TIET_ID")
+                                            thoi_gian_tiem = appt.get("THOI_GIAN_TIEM", 0)
+                                            if (dt_id, ct_id) not in seen_cleanup:
+                                                seen_cleanup.add((dt_id, ct_id))
+                                                cleanup_targets.append((dt_id, ct_id, thoi_gian_tiem))
+                                except (ValueError, TypeError):
+                                    pass
+                        except Exception as e:
+                            print(f"Error resolving appointments during cleanup: {e}")
+
+                    for dt_id, ct_id, thoi_gian_tiem in cleanup_targets:
+                        if dt_id not in added_doi_tuong_ids:
+                            continue
+                        try:
+                            self.vncdc_client.xoa_doi_tuong_hen_tiem(
+                                self.vncdc_ke_hoach_id,
+                                dt_id,
+                                ct_id
+                            )
+                        except Exception as e:
+                            print(f"Error cleaning up target {dt_id}: {e}")
+
                 self.is_fetching = False
+
+                if error_occurred:
+                    self.comm_queue.put(("fetch_error", error_message or "Lỗi lấy dữ liệu từ VNCDC"))
+                else:
+                    self.comm_queue.put(("fetch_success", new_contacts, count_added, count_skipped))
 
         threading.Thread(target=fetch_task, daemon=True).start()
         self._schedule_queue_check()

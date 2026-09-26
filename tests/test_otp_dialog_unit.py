@@ -24,6 +24,7 @@ class DummyToplevel:
 
 # Thay thế mô-đun tkinter bằng mock và dummy classes trước khi import OtpDialog
 sys.modules['tkinter'] = MagicMock()
+sys.modules['tkinter'].TkVersion = 8.6
 sys.modules['tkinter'].Toplevel = DummyToplevel
 sys.modules['tkinter.font'] = MagicMock()
 sys.modules['tkinter.ttk'] = MagicMock()
