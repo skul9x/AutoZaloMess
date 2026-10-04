@@ -1,5 +1,18 @@
 # Changelog
 
+## [2026-10-04] - v2.4.0 (Short Name Extraction & Role Salutation Formatting)
+### Added
+- **Given/Short Name Extraction**: Tự động trích xuất tên gọi ngắn (tên chính/last word) cho danh xưng tiếng Việt qua hàm `extract_short_name` (ví dụ: "Nguyễn Thị Linh" -> "Linh").
+- **Role Detection & Salutation Personalization**: Nhận diện chính xác quan hệ/vai trò (`mẹ`, `bà`, `bố`, `bác`, `ông`, `cô`, `chú`, `phụ huynh`) từ dữ liệu VNCDC và tùy biến lời chào tin nhắn tự động (ví dụ: "mời mẹ Linh", "mời bà Mai", "mời bố Tuấn").
+- **Child Fallback Preservation**: Trong trường hợp không có tên phụ huynh, tự động gán `"phụ huynh bé [Tên Bé]"` và bảo toàn nguyên cụm từ không bị cắt ngắn (ví dụ: "mời phụ huynh bé Nguyễn Văn An").
+- **Table & Controller Data Integrity**: Lưu trữ đầy đủ họ tên trong bảng danh sách GUI và file sao lưu/khôi phục, đồng thời bổ sung trường `role` phục vụ định dạng tin nhắn gửi đi.
+- **Unit & Integration Test Suites**: Bổ sung bộ kiểm thử `tests/test_short_name_formatting.py` và `tests/test_automation_message_formatting.py`.
+
+### Changed
+- Cập nhật `app/utils.py`, `app/controllers/app_controller.py`, và `app/automation_logic.py` để đồng bộ truyền nhận `role` và ghi log lời chào/tin nhắn gửi đi rõ ràng trên giao diện.
+
+---
+
 ## [2026-09-26] - v2.3.0 (VNCDC Temporary Plan Injection & Safe Cleanup Flow)
 ### Added
 - **VNCDC Temporary Plan Injection**: Tích hợp API `nhap_bo_sung_doi_tuong` (bổ sung đối tượng vào kế hoạch) để trích xuất số điện thoại unmasked qua `GetDanhSachHenTiemByParams`.

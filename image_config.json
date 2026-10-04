@@ -1,10 +1,10 @@
 {
-    "web_fail_path": "C:/Users/Admin/Desktop/Test_code/AutoZaloMess_1.2_SourceCode/KhongChoTimKiem_web.png",
-    "app_fail_path": "C:/Users/Admin/Desktop/Test_code/AutoZaloMess_1.2_SourceCode/KhongChoTimKiem_app.png",
-    "web_ratelimit_path": "C:/Users/Admin/Desktop/Test_code/AutoZaloMess_1.2_SourceCode/AnhgioihanTimKiem_web.png",
-    "app_ratelimit_path": "C:/Users/Admin/Desktop/Test_code/AutoZaloMess_1.2_SourceCode/AnhgioihanTimKiem_app.png",
-    "web_ratelimit_path_2": "C:/Users/Admin/Desktop/Test_code/AutoZaloMess_1.3_SourceCode/AnhgioihanTimKiem_web.png",
-    "app_ratelimit_path_2": "C:/Users/Admin/Desktop/Test_code/AutoZaloMess_1.3_SourceCode/AnhgioihanTimKiem_app.png",
-    "web_success_path": "C:/Users/Admin/Desktop/Test_code/AutoZaloMess_1.3_SourceCode/ThanhCong_web.png",
-    "app_success_path": "C:/Users/Admin/Desktop/Test_code/AutoZaloMess_1.3_SourceCode/ThanhCong_app.png"
+    "web_fail_path": "D:/skul9x/AutoZaloMess-main/KhongChoTimKiem_web.png",
+    "app_fail_path": "D:/skul9x/AutoZaloMess-main/KhongChoTimKiem_app.png",
+    "web_ratelimit_path": "D:/skul9x/AutoZaloMess-main/AnhgioihanTimKiem_web.png",
+    "app_ratelimit_path": "D:/skul9x/AutoZaloMess-main/AnhgioihanTimKiem_app.png",
+    "web_ratelimit_path_2": "D:/skul9x/AutoZaloMess-main/AnhgioihanTimKiem_web.png",
+    "app_ratelimit_path_2": "D:/skul9x/AutoZaloMess-main/AnhgioihanTimKiem_app.png",
+    "web_success_path": "D:/skul9x/AutoZaloMess-main/ThanhCong_web.png",
+    "app_success_path": "D:/skul9x/AutoZaloMess-main/ThanhCong_app.png"
 }

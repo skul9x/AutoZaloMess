@@ -6,7 +6,7 @@
     "project": {
         "name": "AutoZaloMess",
         "type": "RPA + VNCDC Integration + Computer Vision",
-        "status": "v2.3 - VNCDC Temporary Plan Injection & Safe Cleanup Flow"
+        "status": "v2.4 - Short Name Extraction & Role-based Salutation Formatting"
     },
     "tech_stack": {
         "language": "Python 3.11+",
@@ -44,12 +44,15 @@
             "MVC Architecture with Services layer",
             "Temporary Plan Injection & Safe Cleanup: Search -> Batch Inject -> Fetch Appointments -> Cleanup in try...finally",
             "Smart Wait RPA Flow: Search -> Wait for Success/Fail/Limit/Timeout -> Act",
-            "Event-driven threading with Queue (comm_queue) for responsive UI"
+            "Event-driven threading with Queue (comm_queue) for responsive UI",
+            "Given Name Extraction & Role Personalization: Full names kept in GUI tables, short names & honorifics (mẹ Linh, bà Mai, bố Tuấn, phụ huynh bé An) formatted in outgoing messages"
         ],
         "gotchas": [
             "VNCDC che SĐT khi tra cứu thông thường; lấy số đầy đủ bằng cách tạm thêm vào kế hoạch tiêm và lấy qua GetDanhSachHenTiemByParams.",
             "Luôn dọn dẹp các đối tượng đã thêm trong khối finally để kế hoạch không bị rác.",
             "Chỉ xóa đối tượng được thêm trong phiên hiện tại (added_doi_tuong_ids), không xóa các đối tượng đã tồn tại từ trước.",
+            "Khi trích xuất tên ngắn, cụm từ fallback 'phụ huynh bé {tên bé}' phải được bảo toàn nguyên vẹn, không cắt về tên bé.",
+            "Regex loại bỏ tiền tố vai trò phải dùng word boundary/ngoặc để tránh cắt nhầm các họ tên như 'Phạm' (khớp nhầm 'PH').",
             "Confidence level 0.8 tối ưu cho nhận diện ảnh nút/trạng thái.",
             "Dọn dẹp ô tìm kiếm Zalo bằng Ctrl+A -> Backspace."
         ],

@@ -51,18 +51,25 @@ class AutomationLogic:
             time.sleep(0.3)
         return None, None
 
-    def process_contact(self, phone, name, message_template, params, is_mother=True):
+    def process_contact(self, phone, name, message_template, params, is_mother=True, role=""):
         if not self.running:
             return "stopped"
         self.log("-" * 30)
         self.log(f"Đang xử lý SĐT: {phone} | Tên: {name}")
 
         try:
-            formatted_message = format_message_for_contact(message_template, name=name, phone=phone, is_mother=is_mother)
+            formatted_message = format_message_for_contact(
+                message_template, name=name, phone=phone, is_mother=is_mother, role=role
+            )
+            greeting = formatted_message.strip().splitlines()[0] if formatted_message else ""
+            self.log(f"Lời chào/Tin nhắn: {greeting}")
         except KeyError as e:
             self.log(f"LỖI: Nội dung tin nhắn có chứa biến không hợp lệ {e}.")
             self.stop()
             return "error"
+        except Exception as e:
+            self.log(f"LỖI khi định dạng tin nhắn: {e}.")
+            return "failed"
 
         pyautogui.click(params["search_coords"])
         self.controlled_sleep(1)
@@ -164,8 +171,15 @@ class AutomationLogic:
                 self.log("Tác vụ đã bị hủy bởi người dùng.")
                 break
             
-            if isinstance(contact, dict) and "is_mother" in contact:
-                status = self.process_contact(contact["phone"], contact["name"], message_template, params, is_mother=contact["is_mother"])
+            if isinstance(contact, dict) and ("is_mother" in contact or "role" in contact):
+                status = self.process_contact(
+                    contact["phone"],
+                    contact["name"],
+                    message_template,
+                    params,
+                    is_mother=contact.get("is_mother", True),
+                    role=contact.get("role", "")
+                )
             else:
                 status = self.process_contact(contact["phone"], contact["name"], message_template, params)
             

@@ -252,7 +252,7 @@ class AppController:
 
                     ten_me = (appt.get("TEN_ME") or "").strip()
                     child_name = (appt.get("HO_TEN") or "").strip()
-                    name_final, is_mother = clean_contact_name_and_role(ten_me, child_name)
+                    name_final, is_mother, role = clean_contact_name_and_role(ten_me, child_name)
 
                     status = "Đã gửi trước đó" if phone in self.sent_phones else "Chờ gửi"
                     if status == "Đã gửi trước đó":
@@ -264,7 +264,8 @@ class AppController:
                         "name": name_final,
                         "phone": phone,
                         "status": status,
-                        "is_mother": is_mother
+                        "is_mother": is_mother,
+                        "role": role
                     })
 
             except Exception as e:
@@ -670,7 +671,15 @@ class AppController:
             phone = str(item["phone"]).strip()
             name = str(item["name"]).strip()
             status = item.get("status", "Chờ gửi")
-            valid_contacts.append({"phone": phone, "name": name, "status": status})
+            is_mother = item.get("is_mother", True)
+            role = item.get("role", "mẹ" if is_mother else "")
+            valid_contacts.append({
+                "phone": phone,
+                "name": name,
+                "status": status,
+                "is_mother": is_mother,
+                "role": role
+            })
             
         if not valid_contacts:
             messagebox.showwarning("Cảnh báo", "File sao lưu trống hoặc không chứa liên hệ hợp lệ.")
