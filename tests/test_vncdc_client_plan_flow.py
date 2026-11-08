@@ -34,14 +34,15 @@ class TestVncdcClientPlanFlow:
             "Message": "Bổ sung đối tượng vào buổi tiêm thành công"
         }
 
-        with patch.object(client.session, "post", return_value=mock_resp) as mock_post:
-            doi_tuong_ids = [81126724, "81123344", {"DOI_TUONG_ID": 81118298, "DANH_SACH_VACXIN": []}]
-            res = client.nhap_bo_sung_doi_tuong(
-                ke_hoach_id=9403580,
-                doi_tuong_ids=doi_tuong_ids,
-                buoi_tiem=1,
-                force_save=0
-            )
+        with patch.object(client, "get_anti_forgery_token", return_value=None):
+            with patch.object(client.session, "post", return_value=mock_resp) as mock_post:
+                doi_tuong_ids = [81126724, "81123344", {"DOI_TUONG_ID": 81118298, "DANH_SACH_VACXIN": []}]
+                res = client.nhap_bo_sung_doi_tuong(
+                    ke_hoach_id=9403580,
+                    doi_tuong_ids=doi_tuong_ids,
+                    buoi_tiem=1,
+                    force_save=0
+                )
 
             # Check return structure and status
             assert isinstance(res, dict)
@@ -130,8 +131,9 @@ class TestVncdcClientPlanFlow:
             ]
         }
 
-        with patch.object(client.session, "post", return_value=mock_resp) as mock_post:
-            items = client.get_danh_sach_hen_tiem(ke_hoach_id="9403580", buoi_tiem=0, trang_thai=-1)
+        with patch.object(client, "get_anti_forgery_token", return_value=None):
+            with patch.object(client.session, "post", return_value=mock_resp) as mock_post:
+                items = client.get_danh_sach_hen_tiem(ke_hoach_id="9403580", buoi_tiem=0, trang_thai=-1)
 
             assert isinstance(items, list)
             assert len(items) == 2
@@ -193,13 +195,14 @@ class TestVncdcClientPlanFlow:
         mock_resp.text = "1"
         mock_resp.json.return_value = 1
 
-        with patch.object(client.session, "post", return_value=mock_resp) as mock_post:
-            success = client.xoa_doi_tuong_hen_tiem(
-                ke_hoach_id="9403580",
-                doi_tuong_id="81015981",
-                ke_hoach_tiem_ct_id="84020986",
-                thoi_gian_tiem=0
-            )
+        with patch.object(client, "get_anti_forgery_token", return_value=None):
+            with patch.object(client.session, "post", return_value=mock_resp) as mock_post:
+                success = client.xoa_doi_tuong_hen_tiem(
+                    ke_hoach_id="9403580",
+                    doi_tuong_id="81015981",
+                    ke_hoach_tiem_ct_id="84020986",
+                    thoi_gian_tiem=0
+                )
 
             assert success is True
 

@@ -1,5 +1,31 @@
 # Changelog
 
+## [2026-11-08] - v2.5.1 (VNCDC Comprehensive AntiForgeryToken & 403 Forbidden Fix)
+### Fixed
+- **403 Forbidden Resolution Across Entire Plan Flow**: Khắc phục triệt để lỗi `403 Forbidden` do cơ chế bảo mật mới của VNCDC áp dụng trên toàn bộ các endpoint tiêm chủng (`GetDanhSachDoiTuongTiem`, `GetDanhSachHenTiemByParams`, `NhapBoSungDoiTuong`, `XoaDoiTuongDSHenTiem`).
+- **Dynamic Header Injection**: Tự động lấy dynamic AntiForgeryToken từ `/Account/AntiForgeryToken` (hoặc fallback từ cookie session) và đính kèm đồng thời 2 headers `RequestVerificationToken` và `__RequestVerificationToken`.
+- **Dynamic SESSION_KEY**: Cập nhật format `SESSION_KEY` trong `AppController` theo chuẩn web của VNCDC (`BO_SUNG_DV_{min}_{sec}_{ms}`).
+- **Test Verification**: Bổ sung bộ kiểm thử `tests/test_vncdc_search_token.py` và cập nhật `tests/test_vncdc_client_plan_flow.py`, xác nhận toàn bộ 30/30 unit & integration tests đều PASSED.
+
+---
+
+## [2026-11-08] - v2.5.0 (VNCDC Updated 2FA AntiForgeryToken Flow)
+### Added
+- **AntiForgeryToken Integration**: Tự động lấy Anti-Forgery Token qua `GET /Account/AntiForgeryToken?_={timestamp_ms}` trước khi xác thực mã OTP hai lớp (2FA).
+- **Mandatory 2FA Request Verification Token Header**: Đính kèm header `RequestVerificationToken` và `Referer: https://tiemchung.vncdc.gov.vn/Account/VerifyTwoFactor` khi gửi `POST /Account/VerifyTwoFactor`, tuân thủ cơ chế bảo mật mới của VNCDC.
+- **Controller State Verification & Resilient Error Handling**: Tích hợp luồng xác thực 2FA bất đồng bộ trong `AppController` (`verify_task`) với thread daemon không block UI, xử lý lỗi mạng (`timeout`, `connect error`), mã OTP sai, và tự động gọi `fetch_profile_and_plan` sau khi xác thực thành công.
+- **Defensive UI Lifecycle Handling**: Bổ sung cơ chế phòng vệ an toàn cho `OtpDialog` trong `process_comm_queue` phòng trường hợp dialog bị đóng trước khi worker phản hồi, đồng thời hiển thị lỗi trực quan trên `FetchTab`.
+- **Test Suites**: Tạo 2 bộ kiểm thử tự động toàn diện:
+  - `tests/test_vncdc_client_2fa_antiforgery.py` (Phase 01: Client AntiForgeryToken & Header verification).
+  - `tests/test_vncdc_2fa_controller_integration.py` (Phase 02: Controller end-to-end 2FA flow integration).
+
+### Changed
+- Cập nhật `app/services/vncdc_client.py` thêm phương thức `get_anti_forgery_token()` và nâng cấp `verify_2fa(code)`.
+- Cập nhật `app/controllers/app_controller.py` xử lý an toàn vòng đời `OtpDialog` và queue communication.
+- Đồng bộ bộ nhớ kiến thức dự án `.brain/` (brain.json, session.json).
+
+---
+
 ## [2026-10-04] - v2.4.0 (Short Name Extraction & Role Salutation Formatting)
 ### Added
 - **Given/Short Name Extraction**: Tự động trích xuất tên gọi ngắn (tên chính/last word) cho danh xưng tiếng Việt qua hàm `extract_short_name` (ví dụ: "Nguyễn Thị Linh" -> "Linh").

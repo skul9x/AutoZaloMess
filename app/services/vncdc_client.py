@@ -1,3 +1,4 @@
+import time
 import httpx
 from .vncdc_parser import parse_login_token, parse_ke_hoach_tiem_id, parse_search_response
 
@@ -92,7 +93,42 @@ class VncdcClient:
                     pass
                 return False, "failed", error_message
 
+    def get_anti_forgery_token(self):
+        """
+        Lấy AntiForgeryToken từ server VNCDC trước khi xác thực 2FA.
+        GET /Account/AntiForgeryToken?_={timestamp_ms}
+        """
+        try:
+            timestamp_ms = int(time.time() * 1000)
+            r = self.session.get(
+                f"/Account/AntiForgeryToken?_={timestamp_ms}",
+                headers={
+                    "X-Requested-With": "XMLHttpRequest",
+                    "Referer": f"{self.base_url}/Account/VerifyTwoFactor",
+                    "Accept": "*/*",
+                },
+                timeout=10.0,
+            )
+            r.raise_for_status()
+            data = r.json()
+            if isinstance(data, dict):
+                return data.get("token")
+            return None
+        except Exception:
+            return None
+
     def verify_2fa(self, code):
+        token = self.get_anti_forgery_token()
+        headers = {
+            "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+            "X-Requested-With": "XMLHttpRequest",
+            "Accept": "application/json, text/javascript, */*; q=0.01",
+            "Origin": self.base_url,
+            "Referer": f"{self.base_url}/Account/VerifyTwoFactor",
+        }
+        if token:
+            headers["RequestVerificationToken"] = token
+
         data = {
             "code": code
         }
@@ -100,13 +136,7 @@ class VncdcClient:
             r = self.session.post(
                 "/Account/VerifyTwoFactor",
                 data=data,
-                headers={
-                    "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-                    "X-Requested-With": "XMLHttpRequest",
-                    "Accept": "application/json, text/javascript, */*; q=0.01",
-                    "Origin": self.base_url,
-                    "Referer": f"{self.base_url}/Account/Login",
-                }
+                headers=headers,
             )
         except Exception as e:
             return False, f"Gửi mã OTP thất bại: {str(e)}"
@@ -150,16 +180,23 @@ class VncdcClient:
         return profile, ke_hoach_id
 
     def search_doi_tuong(self, payload):
+        headers = {
+            "Accept": "text/html, */*; q=0.01",
+            "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+            "Origin": self.base_url,
+            "Referer": f"{self.base_url}/KeHoachTiemPhatSinhArea/KeHoachTiemPhatSinh",
+            "X-Requested-With": "XMLHttpRequest",
+        }
+        # Đính kèm token xác thực để tránh lỗi 403 Forbidden
+        token = self.get_anti_forgery_token() or self.session.cookies.get("__RequestVerificationToken")
+        if token:
+            headers["RequestVerificationToken"] = token
+            headers["__RequestVerificationToken"] = token
+
         r = self.session.post(
             "/KeHoachTiemPhatSinhArea/NhapBoSung/GetDanhSachDoiTuongTiem/",
             data=payload,
-            headers={
-                "Accept": "text/html, */*; q=0.01",
-                "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-                "Origin": self.base_url,
-                "Referer": f"{self.base_url}/KeHoachTiemPhatSinhArea/KeHoachTiemPhatSinh",
-                "X-Requested-With": "XMLHttpRequest",
-            }
+            headers=headers
         )
         r.raise_for_status()
         return parse_search_response(r.text)
@@ -300,8 +337,9 @@ class VncdcClient:
             "Referer": f"{self.base_url}/KeHoachTiemPhatSinhArea/KeHoachTiemPhatSinh",
             "X-Requested-With": "XMLHttpRequest",
         }
-        token = self.session.cookies.get("__RequestVerificationToken")
+        token = self.get_anti_forgery_token() or self.session.cookies.get("__RequestVerificationToken")
         if token:
+            headers["RequestVerificationToken"] = token
             headers["__RequestVerificationToken"] = token
 
         try:
@@ -343,8 +381,9 @@ class VncdcClient:
             "Referer": f"{self.base_url}/KeHoachTiemPhatSinhArea/KeHoachTiemPhatSinh",
             "X-Requested-With": "XMLHttpRequest",
         }
-        token = self.session.cookies.get("__RequestVerificationToken")
+        token = self.get_anti_forgery_token() or self.session.cookies.get("__RequestVerificationToken")
         if token:
+            headers["RequestVerificationToken"] = token
             headers["__RequestVerificationToken"] = token
 
         try:
@@ -391,8 +430,9 @@ class VncdcClient:
             "Referer": f"{self.base_url}/KeHoachTiemPhatSinhArea/KeHoachTiemPhatSinh",
             "X-Requested-With": "XMLHttpRequest",
         }
-        token = self.session.cookies.get("__RequestVerificationToken")
+        token = self.get_anti_forgery_token() or self.session.cookies.get("__RequestVerificationToken")
         if token:
+            headers["RequestVerificationToken"] = token
             headers["__RequestVerificationToken"] = token
 
         try:

@@ -74,8 +74,12 @@ class AppController:
 
     def show_otp_and_verify(self, client, message):
         def on_confirm(otp):
-            self.otp_dialog.set_loading(True)
-            self.otp_dialog.hide_error()
+            if hasattr(self, "otp_dialog") and self.otp_dialog:
+                try:
+                    self.otp_dialog.set_loading(True)
+                    self.otp_dialog.hide_error()
+                except Exception:
+                    pass
             
             def verify_task():
                 try:
@@ -153,6 +157,10 @@ class AppController:
                     
                     self.comm_queue.put(("fetch_progress", f"[{idx}/{total_xas}] Đang tải dữ liệu xã {xa_id}..."))
                     
+                    now = time.localtime()
+                    ms = int((time.time() % 1) * 1000)
+                    session_key = f"BO_SUNG_DV_{now.tm_min}_{now.tm_sec}_{ms}"
+
                     base_payload = {
                         "KE_HOACH_TIEM_ID": str(self.vncdc_ke_hoach_id),
                         "MA_TRE": "",
@@ -165,7 +173,7 @@ class AppController:
                         "NGAY_SINH_TOI_NGAY": date_to,
                         "TEN_NGUOI_THAN": "",
                         "SO_DIEN_THOAI": "",
-                        "SESSION_KEY": "BO_SUNG_APP",
+                        "SESSION_KEY": session_key,
                     }
 
                     # Fetch page 1
@@ -564,15 +572,27 @@ class AppController:
                         username, password, _ = fetch_tab.get_login_info()
                         self.storage.save_credentials(username, password)
                         
-                        if hasattr(self, "otp_dialog") and self.otp_dialog.winfo_exists():
-                            self.otp_dialog._close()
+                        if hasattr(self, "otp_dialog") and self.otp_dialog:
+                            try:
+                                if self.otp_dialog.winfo_exists():
+                                    self.otp_dialog._close()
+                            except Exception:
+                                pass
                             
                         msg = f"Đăng nhập thành công. KH_ID: {ke_hoach_id}"
                         fetch_tab.set_login_status(msg, "green", True)
                     else:
-                        if hasattr(self, "otp_dialog") and self.otp_dialog.winfo_exists():
-                            self.otp_dialog.set_loading(False)
-                            self.otp_dialog.show_error(data)
+                        dialog_updated = False
+                        if hasattr(self, "otp_dialog") and self.otp_dialog:
+                            try:
+                                if self.otp_dialog.winfo_exists():
+                                    self.otp_dialog.set_loading(False)
+                                    self.otp_dialog.show_error(data)
+                                    dialog_updated = True
+                            except Exception:
+                                pass
+                        if not dialog_updated:
+                            fetch_tab.set_login_status(f"Xác thực thất bại: {data}", "red")
                     
                 elif msg_type == "fetch_progress":
                     fetch_tab.set_fetch_status(message[1])

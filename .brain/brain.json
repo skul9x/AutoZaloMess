@@ -6,7 +6,7 @@
     "project": {
         "name": "AutoZaloMess",
         "type": "RPA + VNCDC Integration + Computer Vision",
-        "status": "v2.4 - Short Name Extraction & Role-based Salutation Formatting"
+        "status": "v2.5.1 - VNCDC Comprehensive AntiForgeryToken & 403 Forbidden Fix"
     },
     "tech_stack": {
         "language": "Python 3.11+",
@@ -23,9 +23,17 @@
         ],
         "frontend": "Tkinter (Custom ttk styling)",
         "automation": "PyAutoGUI + Computer Vision (OpenCV)",
-        "networking": "HTTPX (Sync Client with Session/Cookies/CSRF)"
+        "networking": "HTTPX (Sync Client with Session/Cookies/CSRF & AntiForgeryToken)"
     },
     "api_endpoints": [
+        {
+            "path": "GET /Account/AntiForgeryToken?_={timestamp_ms}",
+            "explained": "Lấy dynamic AntiForgeryToken cho header RequestVerificationToken trước khi verify 2FA OTP."
+        },
+        {
+            "path": "POST /Account/VerifyTwoFactor",
+            "explained": "Gửi mã OTP 2FA kèm header RequestVerificationToken để hoàn tất xác thực và nhận cookie .ASPXAUTH."
+        },
         {
             "path": "POST /KeHoachTiemPhatSinhArea/NhapBoSung/NhapBoSungDoiTuong/",
             "explained": "Tiêm tạm thời danh sách đối tượng (DOI_TUONG_ID) vào kế hoạch tiêm hiện hành."
@@ -45,7 +53,8 @@
             "Temporary Plan Injection & Safe Cleanup: Search -> Batch Inject -> Fetch Appointments -> Cleanup in try...finally",
             "Smart Wait RPA Flow: Search -> Wait for Success/Fail/Limit/Timeout -> Act",
             "Event-driven threading with Queue (comm_queue) for responsive UI",
-            "Given Name Extraction & Role Personalization: Full names kept in GUI tables, short names & honorifics (mẹ Linh, bà Mai, bố Tuấn, phụ huynh bé An) formatted in outgoing messages"
+            "Given Name Extraction & Role Personalization: Full names kept in GUI tables, short names & honorifics (mẹ Linh, bà Mai, bố Tuấn, phụ huynh bé An) formatted in outgoing messages",
+            "Dynamic AntiForgeryToken 2FA Authentication: Fetch token via AJAX GET with timestamp -> Submit OTP with RequestVerificationToken header"
         ],
         "gotchas": [
             "VNCDC che SĐT khi tra cứu thông thường; lấy số đầy đủ bằng cách tạm thêm vào kế hoạch tiêm và lấy qua GetDanhSachHenTiemByParams.",
@@ -54,7 +63,10 @@
             "Khi trích xuất tên ngắn, cụm từ fallback 'phụ huynh bé {tên bé}' phải được bảo toàn nguyên vẹn, không cắt về tên bé.",
             "Regex loại bỏ tiền tố vai trò phải dùng word boundary/ngoặc để tránh cắt nhầm các họ tên như 'Phạm' (khớp nhầm 'PH').",
             "Confidence level 0.8 tối ưu cho nhận diện ảnh nút/trạng thái.",
-            "Dọn dẹp ô tìm kiếm Zalo bằng Ctrl+A -> Backspace."
+            "Dọn dẹp ô tìm kiếm Zalo bằng Ctrl+A -> Backspace.",
+            "VNCDC 2FA yêu cầu header RequestVerificationToken lấy động từ /Account/AntiForgeryToken; nếu thiếu token, server từ chối xác thực mã OTP.",
+            "VNCDC yêu cầu dynamic AntiForgeryToken cho toàn bộ các endpoint POST tiêm chủng (GetDanhSachDoiTuongTiem, GetDanhSachHenTiemByParams, NhapBoSungDoiTuong, XoaDoiTuongDSHenTiem); nếu dùng cookie tĩnh hoặc thiếu token, server sẽ trả về lỗi 403 Forbidden.",
+            "Kiểm tra an toàn vòng đời OtpDialog trước khi gọi phương thức UI từ queue tránh TclError/AttributeError khi dialog đã bị người dùng đóng."
         ],
         "conventions": [
             "Coordinates stored in coords_config.json",
